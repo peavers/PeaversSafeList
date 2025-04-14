@@ -1,6 +1,6 @@
 ## Interface: 110105
 
-## Title: |cff3abdf7Peavers|rSsafeList
+## Title: |cff3abdf7Peavers|rSafeList
 ## IconTexture: Interface\AddOns\PeaversSafeList\src\Media\Icon.tga
 
 ## Notes: Creates a safelist of inventory items and sells everything else
