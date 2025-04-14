@@ -1,4 +1,5 @@
-## Interface: 100200
+## Interface: 110105
+
 ## Title: |cff3abdf7Peavers|rSsafeList
 ## IconTexture: Interface\AddOns\PeaversSafeList\src\Media\Icon.tga
 
