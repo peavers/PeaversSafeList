@@ -1,21 +1,23 @@
+local addonName, addon = ...
 local PeaversSafeList = CreateFrame("Frame", "PeaversSafeListFrame")
-PeaversSafeList:RegisterEvent("ADDON_LOADED")
-PeaversSafeList:RegisterEvent("MERCHANT_SHOW")
+_G.PeaversSafeList = PeaversSafeList
+
+-- Access the PeaversCommons library
+local PeaversCommons = _G.PeaversCommons
+local Utils = PeaversCommons.Utils
+
+-- Initialize addon metadata
+PeaversSafeList.name = addonName
+PeaversSafeList.version = C_AddOns.GetAddOnMetadata(addonName, "Version") or "1.0.0"
 
 -- Local variables
-local addonName = "PeaversSafeList"
 local safeListDB = {}
 local debugMode = false
 
--- Print function for addon messages
-local function Print(msg)
-    print("|cFF00CCFF" .. addonName .. ":|r " .. msg)
-end
-
--- Debug function for development
+-- Debug function for development (internal use)
 local function Debug(msg)
     if debugMode then
-        print("|cFFFF9900" .. addonName .. " Debug:|r " .. msg)
+        Utils.Debug(PeaversSafeList, msg)
     end
 end
 
@@ -26,7 +28,12 @@ function PeaversSafeList:Initialize()
     end
 
     safeListDB = PeaversSafeListDB
-    Print("Addon loaded! Type '/psafe help' for commands.")
+
+    -- Register for MERCHANT_SHOW event
+    PeaversCommons.Events:RegisterEvent("MERCHANT_SHOW", function()
+        -- Optional: Auto-repair if you want to add that functionality
+        -- self:AutoRepair()
+    end)
 end
 
 -- Create item key for database storage
@@ -62,13 +69,13 @@ function PeaversSafeList:SaveInventory()
         end
     end
 
-    Print("Saved " .. count .. " items to your safelist!")
+    Utils.Print(PeaversSafeList, "Saved " .. count .. " items to your safelist!")
 end
 
 -- Sell items not in safelist when at vendor
 function PeaversSafeList:SellJunkItems()
     if not MerchantFrame:IsShown() then
-        Print("You need to be at a vendor to sell items!")
+        Utils.Print(PeaversSafeList, "You need to be at a vendor to sell items!")
         return
     end
 
@@ -108,9 +115,9 @@ function PeaversSafeList:SellJunkItems()
     local copper = earnedMoney % 100
 
     if soldCount > 0 then
-        Print("Sold " .. soldCount .. " items for " .. gold .. "g " .. silver .. "s " .. copper .. "c")
+        Utils.Print(PeaversSafeList, "Sold " .. soldCount .. " items for " .. gold .. "g " .. silver .. "s " .. copper .. "c")
     else
-        Print("No items to sell!")
+        Utils.Print(PeaversSafeList, "No items to sell!")
     end
 end
 
@@ -121,48 +128,75 @@ function PeaversSafeList:ShowSafeList()
         count = count + 1
     end
 
-    Print("You have " .. count .. " items in your safelist.")
+    Utils.Print(PeaversSafeList, "You have " .. count .. " items in your safelist.")
 end
 
 -- Clear the safelist
 function PeaversSafeList:ClearSafeList()
     table.wipe(safeListDB)
-    Print("Your safelist has been cleared!")
+    Utils.Print(PeaversSafeList, "Your safelist has been cleared!")
 end
 
--- Event handler
-PeaversSafeList:SetScript("OnEvent", function(self, event, arg1)
-    if event == "ADDON_LOADED" and arg1 == addonName then
-        self:Initialize()
-    elseif event == "MERCHANT_SHOW" then
-        -- Optional: Auto-repair if you want to add that functionality
-        -- self:AutoRepair()
-    end
-end)
-
--- Slash commands
-SLASH_PEAVERSSAFELIST1 = "/psafe"
-SLASH_PEAVERSSAFELIST2 = "/peaverssafelist"
-SlashCmdList["PEAVERSSAFELIST"] = function(msg)
-    msg = string.lower(msg)
-
-    if msg == "save" or msg == "snapshot" then
+-- Register slash commands
+PeaversCommons.SlashCommands:Register(addonName, "psl", {
+    default = function()
+        Utils.Print(PeaversSafeList, "Commands:")
+        print("  /psl save - Save your current inventory as your safelist")
+        print("  /psl sell - Sell all items not in your safelist")
+        print("  /psl show - Show how many items are in your safelist")
+        print("  /psl clear - Clear your safelist")
+        print("  /psl debug - Toggle debug mode")
+    end,
+    save = function()
         PeaversSafeList:SaveInventory()
-    elseif msg == "sell" then
+    end,
+    snapshot = function()
+        PeaversSafeList:SaveInventory()
+    end,
+    sell = function()
         PeaversSafeList:SellJunkItems()
-    elseif msg == "show" or msg == "list" then
+    end,
+    show = function()
         PeaversSafeList:ShowSafeList()
-    elseif msg == "clear" then
+    end,
+    list = function()
+        PeaversSafeList:ShowSafeList()
+    end,
+    clear = function()
         PeaversSafeList:ClearSafeList()
-    elseif msg == "debug" then
+    end,
+    debug = function()
         debugMode = not debugMode
-        Print("Debug mode " .. (debugMode and "enabled" or "disabled"))
-    else
-        Print("Commands:")
-        Print("/psafe save - Save your current inventory as your safelist")
-        Print("/psafe sell - Sell all items not in your safelist")
-        Print("/psafe show - Show how many items are in your safelist")
-        Print("/psafe clear - Clear your safelist")
-        Print("/psafe debug - Toggle debug mode")
+        Utils.Print(PeaversSafeList, "Debug mode " .. (debugMode and "enabled" or "disabled"))
+    end,
+})
+
+-- Initialize addon using PeaversCommons Events module
+PeaversCommons.Events:Init(addonName, function()
+    PeaversSafeList:Initialize()
+    
+    -- Initialize patrons support
+    if PeaversSafeList.Patrons and PeaversSafeList.Patrons.Initialize then
+        PeaversSafeList.Patrons:Initialize()
     end
-end
+    
+    -- Use the centralized SettingsUI system from PeaversCommons
+    C_Timer.After(0.5, function()
+        -- Create standardized settings pages
+        PeaversCommons.SettingsUI:CreateSettingsPages(
+            PeaversSafeList,           -- Addon reference
+            "PeaversSafeList",         -- Addon name
+            "Peavers Safe List",       -- Display title
+            "Create a safelist of items to prevent auto-selling.", -- Description
+            {   -- Slash commands
+                "/psl save - Save your current inventory as your safelist",
+                "/psl sell - Sell all items not in your safelist",
+                "/psl show - Show how many items are in your safelist",
+                "/psl clear - Clear your safelist",
+                "/psl debug - Toggle debug mode"
+            }
+        )
+    end)
+end, {
+	announceMessage = "Type /psl config for options."
+})
