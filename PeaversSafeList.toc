@@ -14,3 +14,5 @@
 ## Category-enUS: Peavers
 
 src\Main.lua
+src\Utils\Patrons.lua
+src\Utils\SupportUI.lua

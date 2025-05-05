@@ -175,6 +175,11 @@ PeaversCommons.SlashCommands:Register(addonName, "psl", {
 PeaversCommons.Events:Init(addonName, function()
     PeaversSafeList:Initialize()
     
+    -- Initialize patrons support
+    if PeaversSafeList.Patrons and PeaversSafeList.Patrons.Initialize then
+        PeaversSafeList.Patrons:Initialize()
+    end
+    
     -- DIRECT REGISTRATION APPROACH
     -- This ensures the addon appears in Options > Addons regardless of PeaversCommons logic
     C_Timer.After(0.5, function()
