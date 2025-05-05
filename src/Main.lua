@@ -10,24 +10,35 @@ local Utils = PeaversCommons.Utils
 PeaversSafeList.name = addonName
 PeaversSafeList.version = C_AddOns.GetAddOnMetadata(addonName, "Version") or "1.0.0"
 
--- Local variables
+-- Create configuration using PeaversCommons.ConfigManager
+PeaversSafeList.Config = PeaversCommons.ConfigManager:New(
+    "PeaversSafeList", 
+    {  -- Default settings
+        DEBUG_ENABLED = false,
+        items = {}
+    },
+    {
+        savedVariablesName = "PeaversSafeListDB"
+    }
+)
+
+-- Local variables for quick access
 local safeListDB = {}
-local debugMode = false
 
 -- Debug function for development (internal use)
 local function Debug(msg)
-    if debugMode then
+    if PeaversSafeList.Config.DEBUG_ENABLED then
         Utils.Debug(PeaversSafeList, msg)
     end
 end
 
 -- Initialize saved variables
 function PeaversSafeList:Initialize()
-    if not PeaversSafeListDB then
-        PeaversSafeListDB = {}
-    end
-
-    safeListDB = PeaversSafeListDB
+    -- Config has already been initialized by ConfigManager
+    
+    -- Set up local reference to items table for quicker access
+    safeListDB = PeaversSafeList.Config.items or {}
+    PeaversSafeList.Config.items = safeListDB
 
     -- Register for MERCHANT_SHOW event
     PeaversCommons.Events:RegisterEvent("MERCHANT_SHOW", function()
@@ -69,6 +80,9 @@ function PeaversSafeList:SaveInventory()
         end
     end
 
+    -- Save to persistent storage
+    PeaversSafeList.Config:Save()
+    
     Utils.Print(PeaversSafeList, "Saved " .. count .. " items to your safelist!")
 end
 
@@ -134,6 +148,7 @@ end
 -- Clear the safelist
 function PeaversSafeList:ClearSafeList()
     table.wipe(safeListDB)
+    PeaversSafeList.Config:Save()
     Utils.Print(PeaversSafeList, "Your safelist has been cleared!")
 end
 
@@ -166,8 +181,9 @@ PeaversCommons.SlashCommands:Register(addonName, "psl", {
         PeaversSafeList:ClearSafeList()
     end,
     debug = function()
-        debugMode = not debugMode
-        Utils.Print(PeaversSafeList, "Debug mode " .. (debugMode and "enabled" or "disabled"))
+        PeaversSafeList.Config.DEBUG_ENABLED = not PeaversSafeList.Config.DEBUG_ENABLED
+        PeaversSafeList.Config:Save()
+        Utils.Print(PeaversSafeList, "Debug mode " .. (PeaversSafeList.Config.DEBUG_ENABLED and "enabled" or "disabled"))
     end,
 })
 
@@ -175,9 +191,9 @@ PeaversCommons.SlashCommands:Register(addonName, "psl", {
 PeaversCommons.Events:Init(addonName, function()
     PeaversSafeList:Initialize()
     
-    -- Initialize patrons support
-    if PeaversSafeList.Patrons and PeaversSafeList.Patrons.Initialize then
-        PeaversSafeList.Patrons:Initialize()
+    -- Initialize configuration UI
+    if PeaversSafeList.ConfigUI and PeaversSafeList.ConfigUI.Initialize then
+        PeaversSafeList.ConfigUI:Initialize()
     end
     
     -- Use the centralized SettingsUI system from PeaversCommons
