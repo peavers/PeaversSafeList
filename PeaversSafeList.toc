@@ -1,18 +1,13 @@
 ## Interface: 110105
-
 ## Title: |cff3abdf7Peavers|rSafeList
 ## IconTexture: Interface\AddOns\PeaversCommons\src\Media\Icon.tga
-
 ## Notes: Creates a safelist of inventory items and sells everything else
-
 ## Author: Peavers
 ## Version: 1.0.3
 ## X-Curse-Project-ID: 1243133
-
+## Dependencies: PeaversCommons
 ## SavedVariables: PeaversSafeListDB
-
 ## Category-enUS: Peavers
 
 src\Main.lua
 src\Utils\Patrons.lua
-src\Utils\SupportUI.lua
