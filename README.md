@@ -5,6 +5,9 @@
 **A World of Warcraft addon that creates a snapshot of your entire inventory and allows you to sell everything that's
 not in that snapshot with a single command.**
 
+### New!
+Check out [peavers.io](https://peavers.io) and [bootstrap.peavers.io](https://bootstrap.peavers.io) for all my WoW addons and support.
+
 ## Overview
 
 PeaversSafeList simplifies inventory management when farming dungeons or other content. When you use the '/psafe save'
