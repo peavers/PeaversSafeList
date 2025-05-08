@@ -3,7 +3,7 @@
 ## IconTexture: Interface\AddOns\PeaversCommons\src\Media\Icon.tga
 ## Notes: Creates a safelist of inventory items and sells everything else
 ## Author: Peavers
-## Version: 1.0.7
+## Version: 1.0.8
 ## X-Curse-Project-ID: 1243133
 ## Dependencies: PeaversCommons
 ## SavedVariables: PeaversSafeListDB
