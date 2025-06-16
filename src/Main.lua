@@ -214,5 +214,5 @@ PeaversCommons.Events:Init(addonName, function()
         )
     end)
 end, {
-	announceMessage = "Use |cff3abdf7/psl config|r to get started"
+	suppressAnnouncement = true
 })
